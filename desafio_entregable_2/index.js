@@ -1,15 +1,19 @@
-const ProductManager = require('./src/controllers/ProductManager.js'); 
-const pm = new ProductManager();
+const ProductManager = require('./src/controllers/ProductManager.js');
+path = '../desafio_entregable_2/docs/products.txt'
+const pm = new ProductManager(path);
+const Product = require('./src/models/Product.js');
 
 try{
-    pm.addProduct("producto prueba", "Este es un producto prueba", 200, "sin imagen", "abc123", 25);
+    let product = new Product(null, "producto prueba", "Este es un producto prueba", 200, "sin imagen", "abc123", 25);
+    pm.addProduct(product);
 }catch(e){
     console.log(e);
 }
 console.log(pm.getProducts());
 
 try{
-    pm.addProduct("producto prueba", "Este es un producto prueba", 200, "sin imagen", "abc123", 25);
+    let product = new Product(null, "producto prueba", "Este es un producto prueba", 200, "sin imagen", "abc123", 25);
+    pm.addProduct(product);
 }catch(e){
     console.log(e);
 }
@@ -27,7 +31,8 @@ try{
 }
 
 try{
-    pm.addProduct("producto prueba", "Este es un producto prueba", 1, "sin imagen", "abcd123", 25);
+    let product = new Product(null, "producto prueba", "Este es un producto prueba", 1, "sin imagen", "abcd123", 25);
+    pm.addProduct(product);
     console.log('producto creado');
 }catch(e){
     console.log(e);

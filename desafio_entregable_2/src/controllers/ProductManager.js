@@ -4,11 +4,22 @@ const NotFoundError = require('../errors/NotFoundError.js');
 const fs = require('node:fs');
 
 module.exports = class ProductManager{
-    constructor(){
-        this.path = '../desafio_entregable_2/docs/products.txt';
+    constructor(path){
+        this.path = path;
         console.log(this.products)
 
-        this.max_id = 1;
+        this.getMaxId();
+    }
+
+    getMaxId(){
+        this.loadFromFile();
+        let max = 1;
+        this.products.forEach(p => {
+            if(p.id > max){
+                max = p.id;
+            }
+        });
+        this.max_id = max;
     }
 
     loadFromFile(){
@@ -33,11 +44,11 @@ module.exports = class ProductManager{
         })
     }
 
-    addProduct(title, description, price, thumbnail, code, stock){
+    addProduct(product){
         this.loadFromFile();
-        console.log(this.products);
-        let product = new Product(this.max_id, title, description, price, thumbnail, code, stock);
-        if(!this.products.find(p => p.code === code) && this.isValidProduct(product)){
+        console.log(this.max_id);
+        product.id = this.max_id
+        if(!this.products.find(p => p.code === product.code) && this.isValidProduct(product)){
             this.products.push(product);
             fs.writeFileSync(this.path, JSON.stringify(this.products))
             this.max_id++;
