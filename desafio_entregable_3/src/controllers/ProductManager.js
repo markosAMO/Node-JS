@@ -1,19 +1,29 @@
-const AlreadyExistsError = require('../errors/AlreadyExistsError.js');
-const Product = require('../models/Product.js');
-const NotFoundError = require('../errors/NotFoundError.js');
-const fs = require('node:fs');
+import AlreadyExistsError from '../errors/AlreadyExistsError.js';
+import Product from '../models/Product.js';
+import NotFoundError from '../errors/NotFoundError.js';
+import fs from 'fs'
 
-module.exports = class ProductManager{
-    constructor(){
-        this.path = '../desafio_entregable_2/docs/products.txt';
-        console.log(this.products)
+export default class ProductManager{
+    constructor(path){
+        this.path = path;
 
-        this.max_id = 1;
+        this.getMaxId();
     }
 
-    loadFromFile(){
+    async getMaxId(){
+        await this.loadFromFile();
+        let max = 1;
+        this.products.forEach(p => {
+            if(p.id > max){
+                max = p.id;
+            }
+        });
+        this.max_id = max;
+    }
+
+    async loadFromFile(){
         try {
-            const data = fs.readFileSync(this.path, 'utf-8');
+            const data = await fs.promises.readFile(this.path, 'utf-8');
             if (!data.trim()) {
               this.products = [];
             } else {
@@ -33,20 +43,20 @@ module.exports = class ProductManager{
         })
     }
 
-    addProduct(title, description, price, thumbnail, code, stock){
-        this.loadFromFile();
-        console.log(this.products);
-        let product = new Product(this.max_id, title, description, price, thumbnail, code, stock);
-        if(!this.products.find(p => p.code === code) && this.isValidProduct(product)){
+    async addProduct(product){
+        await this.loadFromFile();
+        console.log(this.max_id);
+        product.id = this.max_id
+        if(!this.products.find(p => p.code === product.code) && this.isValidProduct(product)){
             this.products.push(product);
-            fs.writeFileSync(this.path, JSON.stringify(this.products))
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products))
             this.max_id++;
         }else
             throw new AlreadyExistsError()
     }
 
-    findById(id){
-        this.loadFromFile();
+    async findById(id){
+        await this.loadFromFile();
         let element = this.products.find(p => p.id === id)
         if(!element){
             throw new NotFoundError();
@@ -54,19 +64,22 @@ module.exports = class ProductManager{
             return element
     }
 
-    deleteProduct(id){
-        this.loadFromFile();
+    async deleteProduct(id){
+        await this.loadFromFile();
         let index = this.products.findIndex(product => product.id === id);
         if (index !== -1) {
             this.products.splice(index, 1);
-            fs.writeFileSync(this.path, JSON.stringify(this.products));
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products));
             console.log("eliminado correctamente");
         }else
             throw new NotFoundError();
     }
 
-    getProducts(){
-        this.loadFromFile();
+    async getProducts(limit){
+        await this.loadFromFile();
+        if(limit){
+            return this.products.slice(0, limit);
+        }
         return [...this.products];
     }
 
