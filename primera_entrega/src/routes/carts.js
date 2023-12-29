@@ -20,7 +20,7 @@ router.post('/:cid/product/:pid', async (req, res) =>{
         const productId = parseInt(req.params.pid);
         const cartId = parseInt(req.params.cid);
         let cp = new CartProduct(productId, 1);
-        cm.addProductToCart(cartId, cp);
+        await cm.addProductToCart(cartId, cp);
         res.json({"response": "succsess"});
     } catch (error) {
         console.error(error);

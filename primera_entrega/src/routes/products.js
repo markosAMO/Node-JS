@@ -67,16 +67,15 @@ router.post('/', async (req, res) =>{
 
 router.delete('/:id', async (req, res) =>{
     const productId = parseInt(req.params.id);
-
     try {
-        pm.deleteProduct(productId);
-        res.json({"message": "success"});
-    } catch (error) {
+        await pm.deleteProduct(productId);
+        res.json({"message": "delete success"});
+    }catch(error) {
         console.error(error);
-        if (error.name === 'NotFoundError') {
-            res.status(404).send('Product not found');
-        } else {
+        if (error.name === 'InternalServerError') {
             res.status(500).send('Internal Server Error');
+        }else {
+            res.status(error.status).send({"error": error.message});
         }
     }
 });
