@@ -33,29 +33,11 @@ router.get('/:id', async (req, res) =>{
 
 router.put('/:id', async (req, res) =>{
     const productId = parseInt(req.params.id);
-    let p = req.body;
-    console.log("==============================");
-    console.log(p);
     try{
-        modifiedProduct = pm.modifyProduct(productId, p);
+        let modifiedProduct = await pm.modifyProduct(productId, req.body);
+        res.jsonp({"message": "success",
+                   "product": modifiedProduct});
     }catch(error){
-        console.error(error);
-        if (error.name === 'NotFoundError') {
-            res.status(404).send('Product not found');
-        } else {
-            res.status(500).send('Internal Server Error');
-        } 
-    }
-    res.jsonp(p);
-});
-
-router.post('/', async (req, res) =>{
-    const productId = parseInt(req.params.id);
-
-    try {
-        const product = await pm.findById(productId);
-        res.json(product);
-    } catch (error) {
         console.error(error);
         if (error.name === 'NotFoundError') {
             res.status(404).send('Product not found');
@@ -65,12 +47,30 @@ router.post('/', async (req, res) =>{
     }
 });
 
+router.post('/', async (req, res) =>{
+    try {
+        let product = await pm.addProduct(req.body);
+        res.json({"message": "success",
+                  "product": product});
+    } catch (error) {
+        if (error.name === 'AlreadyExistsError'){
+            res.status(404).send({"error": error.message})
+        }else{
+            if (error.name === 'NotFoundError') {
+                res.status(404).send({"error": error.message});
+            } else {
+                res.status(500).send('Internal Server Error');
+            }
+        }
+    }
+});
+
 router.delete('/:id', async (req, res) =>{
     const productId = parseInt(req.params.id);
 
     try {
-        const product = await pm.findById(productId);
-        res.json(product);
+        pm.deleteProduct(productId);
+        res.json({"message": "success"});
     } catch (error) {
         console.error(error);
         if (error.name === 'NotFoundError') {

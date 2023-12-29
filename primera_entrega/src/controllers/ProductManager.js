@@ -1,5 +1,4 @@
 import AlreadyExistsError from '../errors/AlreadyExistsError.js';
-import Product from '../models/Product.js';
 import NotFoundError from '../errors/NotFoundError.js';
 import fs from 'fs'
 
@@ -36,7 +35,7 @@ export default class ProductManager{
     }
 
     isValidProduct(product){
-        const expected_keys = ["id", "title", "description", "price", "thumbnail", "code", "stock"]
+        const expected_keys = ["id", "title", "description", "price", "code", "stock"]
         const keys = Object.keys(product)
         return expected_keys.every((expected_key) => {
             return (keys.includes(expected_key) && product[expected_key])
@@ -45,12 +44,11 @@ export default class ProductManager{
 
     async addProduct(product){
         await this.loadFromFile();
-        console.log(this.max_id);
-        product.id = this.max_id
+        product.id = this.max_id+1;
         if(!this.products.find(p => p.code === product.code) && this.isValidProduct(product)){
             this.products.push(product);
-            await fs.promises.writeFile(this.path, JSON.stringify(this.products))
-            this.max_id++;
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products));
+            return product;
         }else
             throw new AlreadyExistsError()
     }
@@ -61,7 +59,7 @@ export default class ProductManager{
         if(!element){
             throw new NotFoundError();
         }else
-            return element
+            return element;
     }
 
     async deleteProduct(id){
@@ -77,13 +75,13 @@ export default class ProductManager{
 
     async modifyProduct(id, producto){
         await this.loadFromFile();
-        p = await this.findById(id); //comprobar que existe el producto
-        let index = this.products.findIndex(product => product.id === id);
-        if(producto.id===id){
-            p = producto;
-            p.id = id;
+        await this.findById(id); //comprobar que existe el producto
+        producto.id = id;
+        if(this.isValidProduct(producto)){
+            let index = this.products.findIndex(product => product.id === id);
+            this.products[index] = producto;
             await fs.promises.writeFile(this.path, JSON.stringify(this.products));
-            return p;
+            return producto;
         }
     }
 
