@@ -2,11 +2,12 @@ import InvalidProduct from '../errors/InvalidProductError.js';
 import NotFoundError from '../errors/NotFoundError.js';
 import Cart from '../models/Cart.js';
 import fs from 'fs'
-
+import ProductManager from './ProductManager.js';
 export default class CartManager{
     constructor(path){
         this.path = path;
-
+        let productPpath = '../primera_entrega/docs/products.json';
+        this.pm = new ProductManager(productPpath);
         this.getMaxId();
     }
 
@@ -19,6 +20,7 @@ export default class CartManager{
             }
         });
         this.max_id = max;
+        return this.max_id;
     }
 
     async loadFromFile(){
@@ -37,7 +39,7 @@ export default class CartManager{
 
     async addCart(){
         await this.loadFromFile();
-        let cart = new Cart(this.max_id+1);
+        let cart = new Cart(await this.getMaxId() + 1);
         this.carts.push(cart);
         await fs.promises.writeFile(this.path, JSON.stringify(this.carts));
         return cart;
@@ -46,14 +48,21 @@ export default class CartManager{
     async showCartProducts(id){
         await this.loadFromFile();
         let cart = await this.findCartById(id);
-        return cart.products;
+        let result = [];
+        let products_processed = cart.products.map(async (p)=>{
+            let product = await this.pm.findById(p.id_prod);
+            product.quantity = p.quantity;
+            return product;
+        })
+        result = await Promise.all(products_processed);
+        return result;
     }
 
     async addProductToCart(id, p){
+        await this.pm.findById(p.id_prod);
         await this.loadFromFile();
         let cart = await this.findCartById(id);
         let cartProduct = cart.products.find(prod => prod.id_prod === p.id_prod);
-        console.log(cartProduct);
         if(cartProduct){
             cartProduct.quantity++;
         }else
