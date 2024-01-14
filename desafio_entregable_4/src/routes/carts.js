@@ -23,11 +23,14 @@ router.post('/:cid/product/:pid', async (req, res) =>{
         await cm.addProductToCart(cartId, cp);
         res.json({"response": "succsess"});
     } catch (error) {
-        console.error(error);
+        console.log(error);
+        console.log(error.status);
+        console.log("====");
         if(error.name === 'InternalServerError'){
             res.status(500).send('Internal Server Error');
-        }else
-            res.status(error.status).send(error.name);
+        }else{
+            res.status(error.status).send({"error": error.name});
+        }
     }
 });
 
@@ -40,8 +43,9 @@ router.get('/:cid', async (req, res) => {
         if(error.name === 'InternalServerError'){
             res.status(500).send('Internal Server Error');
         }else
-            res.status(error.status).send(error.name);
+            res.status(error.status).send({"error":error.name});
     }
 });
 
 export default router;
+
