@@ -29,7 +29,7 @@ router.post('/:cid/product/:pid', async (req, res) =>{
         if(error.name === 'InternalServerError'){
             res.status(500).send('Internal Server Error');
         }else{
-            res.status(error.status).send(error.name);
+            res.status(error.status).send({"error": error.name});
         }
     }
 });
@@ -43,7 +43,7 @@ router.get('/:cid', async (req, res) => {
         if(error.name === 'InternalServerError'){
             res.status(500).send('Internal Server Error');
         }else
-            res.status(error.status).send(error.name);
+            res.status(error.status).send({"error":error.name});
     }
 });
 
