@@ -24,7 +24,7 @@ router.get('/:id', async (req, res) =>{
     } catch (error) {
         console.error(error);
         if (error.name === 'NotFoundError') {
-            res.status(404).send('Product not found');
+            res.status(404).send({ message: "product not found" });
         } else {
             res.status(500).send('Internal Server Error');
         }
